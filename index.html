@@ -1,0 +1,369 @@
+
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#07111f">
+<title>KALKULATOR MISTIK PRO</title>
+<style>
+:root {
+  --bg:#07111f;
+  --panel:#101d30;
+  --border:#243a55;
+  --text:#edf4ff;
+  --muted:#9eb0c7;
+  --accent:#38bdf8;
+}
+*{box-sizing:border-box}
+body {
+  margin:0;
+  background:var(--bg);
+  color:var(--text);
+  font:16px/1.5 Arial,sans-serif;
+}
+main {
+  max-width:650px;
+  margin:auto;
+  padding:16px 14px 35px;
+}
+h1{font-size:25px;margin:0 0 6px}
+h2{font-size:18px;margin:0 0 12px}
+p{color:var(--muted);font-size:14px}
+.card {
+  background:var(--panel);
+  border:1px solid var(--border);
+  border-radius:15px;
+  padding:15px;
+  margin-bottom:14px;
+}
+label{display:block;font-weight:bold;margin:10px 0 5px}
+input,textarea {
+  width:100%;
+  padding:12px;
+  border:1px solid #38516f;
+  border-radius:9px;
+  background:#081526;
+  color:white;
+  font-size:16px;
+}
+textarea {
+  min-height:70px;
+  resize:vertical;
+  font-family:monospace;
+}
+button {
+  padding:13px;
+  border:0;
+  border-radius:10px;
+  font-size:15px;
+  font-weight:bold;
+  cursor:pointer;
+}
+.actions{display:flex;gap:10px;margin-top:14px}
+.primary{background:var(--accent);color:#062033;flex:1}
+.secondary{background:#263b54;color:white;flex:1}
+.check{display:flex;align-items:center;gap:9px;margin:12px 0}
+.check input{width:18px;height:18px}
+.check label{margin:0}
+.note {
+  padding:11px;
+  border:1px solid #80641c;
+  border-radius:9px;
+  color:#fde68a;
+  margin-top:12px;
+  font-size:13px;
+}
+.method{border-top:1px solid var(--border);padding-top:12px;margin-top:12px}
+.method:first-of-type{border-top:0}
+.result {
+  padding:12px;
+  margin-top:9px;
+  background:#081526;
+  border:1px solid var(--border);
+  border-radius:10px;
+  overflow-wrap:anywhere;
+}
+.result b{display:block;margin-bottom:5px}
+.value{font-size:18px;font-weight:bold}
+.small{font-size:12px;color:var(--muted)}
+pre{white-space:pre-wrap;overflow-wrap:anywhere;font-size:14px}
+</style>
+</head>
+<body>
+<main>
+
+<header>
+  <h1>🎯 KALKULATOR MISTIK PRO</h1>
+  <p>Kalkulator angka dasar, BBFS, dan kombinasi 2D/3D/4D.</p>
+</header>
+
+<section class="card">
+  <h2>1. Angka Dasar</h2>
+  <label for="base">Masukkan angka 2D–6D</label>
+  <input id="base" type="text" inputmode="numeric"
+         maxlength="6" value="1234" placeholder="Contoh: 1234">
+
+  <div class="check">
+    <input type="checkbox" id="showBBFS" checked>
+    <label for="showBBFS">Aktifkan BBFS</label>
+  </div>
+
+  <div class="check">
+    <input type="checkbox" id="showCombos" checked>
+    <label for="showCombos">Aktifkan kombinasi 2D, 3D, 4D</label>
+  </div>
+
+  <div class="actions">
+    <button class="primary" onclick="hitung()">HITUNG</button>
+    <button class="secondary" onclick="resetForm()">RESET</button>
+  </div>
+
+  <div id="status" class="note">
+    Masukkan tabel rumus terlebih dahulu.
+    Hasil metode tidak akan dibuat-buat.
+  </div>
+</section>
+
+<section class="card">
+  <h2>2. Tabel Rumus Mistik</h2>
+  <p>
+    Isi setiap digit 0–9 sesuai tabel rumus yang Anda gunakan.
+    Format: 0=hasil, 1=hasil, dan seterusnya sampai 9=hasil.
+    Pisahkan dengan koma.
+  </p>
+
+  <div id="formulas"></div>
+</section>
+
+<section class="card">
+  <h2>3. Hasil Perhitungan</h2>
+  <div id="hasil">
+    <p>Masukkan tabel rumus, lalu tekan HITUNG.</p>
+  </div>
+</section>
+
+<section class="card">
+  <h2>Petunjuk Format Rumus</h2>
+  <pre>0=..., 1=..., 2=..., 3=..., 4=...,
+5=..., 6=..., 7=..., 8=..., 9=...</pre>
+  <p>
+    Contoh di atas hanya format input, bukan tabel mistik
+    yang sebenarnya. Ganti dengan nilai dari tabel Anda.
+  </p>
+</section>
+
+<footer>
+  <p>
+    Kalkulator ini menghitung berdasarkan tabel yang dimasukkan.
+    Hasil kombinasi tidak menjamin hasil undian atau togel.
+  </p>
+</footer>
+
+</main>
+
+<script>
+const namaMetode = [
+  "Mistik Lama",
+  "Mistik Baru",
+  "Index",
+  "Tysen",
+  "Mistik 9",
+  "Mistik 0"
+];
+
+const wadah = document.getElementById("formulas");
+
+namaMetode.forEach((nama, i) => {
+  const div = document.createElement("div");
+  div.className = "method";
+  div.innerHTML = `
+    <label for="rumus${i}">${nama}</label>
+    <textarea id="rumus${i}"
+      placeholder="Masukkan tabel ${nama} di sini"
+      spellcheck="false"></textarea>
+    <div class="small">
+      Isi berdasarkan tabel rumus yang Anda miliki.
+    </div>`;
+  wadah.appendChild(div);
+});
+
+function bacaRumus(teks) {
+  const map = {};
+  const bagian = teks.split(/[,\n;]+/)
+    .map(x => x.trim())
+    .filter(Boolean);
+
+  for (const item of bagian) {
+    const cocok = item.match(/^([0-9])\s*=\s*([0-9]+)$/);
+
+    if (!cocok) {
+      return {
+        ok:false,
+        pesan:"Format salah: " + item
+      };
+    }
+
+    map[cocok[1]] = cocok[2];
+  }
+
+  for (let i = 0; i <= 9; i++) {
+    if (map[String(i)] === undefined) {
+      return {
+        ok:false,
+        pesan:"Digit " + i + " belum diisi."
+      };
+    }
+  }
+
+  return {ok:true,map};
+}
+
+function buatKombinasi(digit, ukuran, batas=10) {
+  const hasil = [];
+
+  function susun(prefix, mulai) {
+    if (hasil.length >= batas) return;
+
+    if (prefix.length === ukuran) {
+      hasil.push(prefix.join(""));
+      return;
+    }
+
+    for (let i = mulai; i < digit.length; i++) {
+      susun([...prefix, digit[i]], i + 1);
+      if (hasil.length >= batas) return;
+    }
+  }
+
+  susun([], 0);
+  return hasil;
+}
+
+function aman(teks) {
+  return String(teks).replace(/[&<>"']/g, karakter => ({
+    "&":"&amp;",
+    "<":"&lt;",
+    ">":"&gt;",
+    '"':"&quot;",
+    "'":"&#39;"
+  })[karakter]);
+}
+
+function hitung() {
+  const angka = document.getElementById("base").value.trim();
+  const hasilEl = document.getElementById("hasil");
+  const statusEl = document.getElementById("status");
+
+  if (!/^[0-9]{2,6}$/.test(angka)) {
+    statusEl.textContent =
+      "Masukkan angka dasar yang terdiri dari 2 sampai 6 digit.";
+    hasilEl.innerHTML = "<p>Angka dasar tidak valid.</p>";
+    return;
+  }
+
+  const pakaiBBFS =
+    document.getElementById("showBBFS").checked;
+
+  const pakaiKombinasi =
+    document.getElementById("showCombos").checked;
+
+  let jumlahLengkap = 0;
+  let html = "";
+
+  namaMetode.forEach((nama, i) => {
+    const teks = document.getElementById("rumus" + i)
+      .value.trim();
+
+    if (!teks) {
+      html += `
+        <div class="result">
+          <b>${nama}</b>
+          <div class="value">Belum dihitung</div>
+          <p>Tabel rumus belum diisi.</p>
+        </div>`;
+      return;
+    }
+
+    const rumus = bacaRumus(teks);
+
+    if (!rumus.ok) {
+      html += `
+        <div class="result">
+          <b>${nama}</b>
+          <div class="value">Tabel belum valid</div>
+          <p>${aman(rumus.pesan)}</p>
+        </div>`;
+      return;
+    }
+
+    jumlahLengkap++;
+
+    const dipetakan = [...angka]
+      .map(digit => rumus.map[digit])
+      .join("");
+
+    const digitUnik = [...new Set(dipetakan.split(""))]
+      .sort();
+
+    html += `
+      <div class="result">
+        <b>${nama}</b>
+        <p>Hasil pemetaan</p>
+        <div class="value">${aman(dipetakan)}</div>`;
+
+    if (pakaiBBFS) {
+      html += `
+        <p>BBFS / digit unik</p>
+        <div class="value">${aman(digitUnik.join(""))}</div>`;
+    }
+
+    if (pakaiKombinasi) {
+      [2,3,4].forEach(ukuran => {
+        const daftar = digitUnik.length >= ukuran
+          ? buatKombinasi(digitUnik, ukuran, 10)
+          : [];
+
+        html += `
+          <p>${ukuran}D — maksimal 10 kombinasi</p>
+          <pre>${daftar.length
+            ? aman(daftar.join("  "))
+            : "Digit unik tidak cukup untuk membentuk " + ukuran + "D."
+          }</pre>`;
+      });
+    }
+
+    html += `</div>`;
+  });
+
+  hasilEl.innerHTML = html;
+
+  if (jumlahLengkap === namaMetode.length) {
+    statusEl.textContent =
+      "Semua tabel lengkap. Hasil dihitung dari tabel yang Anda masukkan.";
+  } else {
+    statusEl.textContent =
+      jumlahLengkap + " dari " + namaMetode.length +
+      " tabel lengkap. Metode yang belum lengkap tidak dihitung.";
+  }
+}
+
+function resetForm() {
+  document.getElementById("base").value = "1234";
+  document.getElementById("showBBFS").checked = true;
+  document.getElementById("showCombos").checked = true;
+
+  namaMetode.forEach((_, i) => {
+    document.getElementById("rumus" + i).value = "";
+  });
+
+  document.getElementById("hasil").innerHTML =
+    "<p>Masukkan tabel rumus, lalu tekan HITUNG.</p>";
+
+  document.getElementById("status").textContent =
+    "Masukkan tabel rumus terlebih dahulu. Hasil metode tidak akan dibuat-buat.";
+}
+</script>
+
+</body>
+</html>
